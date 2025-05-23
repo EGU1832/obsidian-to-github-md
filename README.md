@@ -42,10 +42,10 @@ ${Latex_formula}$
 e.g.
 
 $$
-/begin{align}
+\begin{align}
 \text{Newton's Second Law} \\
 F = ma
-/end{align}
+\end{align}
 $$
 
 $1 + 1 = 2$
