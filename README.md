@@ -20,6 +20,13 @@
 
 ---
 
+## Demo
+
+<p align="center">
+  <img src="demo.gif" alt="obsidian-to-github-md Demo" width="800">
+</p>
+
+
 ## Tech Stack
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
