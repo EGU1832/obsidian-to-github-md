@@ -1,0 +1,292 @@
+:root{
+  --bg: #0d1117;
+  --panel: #161b22;
+  --muted: #8b949e;
+  --text: #c9d1d9;
+  --accent: #2f81f7;
+  --border: #30363d;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+}
+
+* { box-sizing: border-box; }
+
+/* === 전체 화면 고정, 전역 스크롤 제거 === */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+}
+
+/* === 헤더 === */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex-shrink: 0;
+  height: 56px;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .app-title { font-size: 1rem; }
+}
+
+/* === 헤더 버튼 === */
+.tools { display: flex; gap: 8px; align-items: center; }
+.file-button {
+  display: inline-block;
+  padding: 8px 12px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.file-button input { display: none; }
+
+
+button, .ghost, .secondary {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.secondary { background: #22272e; }
+button:hover, .ghost:hover { border-color: var(--accent); color: #fff; }
+a.ghost { text-decoration: none; }
+
+/* === 전체 레이아웃 === */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* 편집기+프리뷰 컨테이너 */
+.editor-container {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  overflow: hidden; /* 전체 스크롤 차단 */
+  position: relative;
+}
+
+/* 좌우 패널 */
+.pane {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  min-width: 0;
+  min-height: 0;
+}
+.pane-left {
+  flex: 0 0 50%;
+  min-width: 200px;
+  max-width: 90%;
+  border-right: none;
+  overflow: hidden;
+}
+.pane-right {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 패널 헤더 */
+.pane-header {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: #020409;
+}
+.pane-header h2 { margin: 0 0 5px 0; font-size: 14px; }
+.pane-header small { color: var(--muted); }
+
+/* 분할선 */
+#splitter {
+  flex: 0 0 6px;
+  width: 6px;
+  background: var(--border);
+  cursor: col-resize;
+  transition: background 0.2s;
+}
+#splitter:hover, .editor-container.dragging #splitter {
+  background: var(--accent);
+}
+
+/* 에디터 & 프리뷰 내부 스크롤 */
+.code-editor {
+  flex: 1;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  background: #0c1117;
+  color: #e6edf3;
+  padding: 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  line-height: 1.6;
+  tab-size: 2;
+  overflow: auto;
+}
+
+.markdown-view {
+  flex: 1;
+  overflow: auto;
+  background: #0c1117;
+  padding: 20px;
+}
+
+/* 코드블록, 수식 스타일 */
+.markdown-body pre code { background: transparent !important; }
+.markdown-body mjx-container { font-size: 100%; line-height: 1.6; }
+mjx-container[jax="CHTML"][display="true"] { margin: 1em 0; }
+
+/* === "다시 컴파일하기" 버튼 === */
+.compile-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.compile-button:hover { background: #238636; }
+.compile-button .material-symbols-rounded {
+  font-size: 18px;
+  line-height: 1;
+}
+.spin { animation: spin 1.2s linear infinite; }
+@keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* === 콘솔 영역 === */
+.console {
+  flex-shrink: 0;
+  height: 160px;
+  border-top: 1px solid var(--border);
+  background: #020409;
+  display: flex;
+  flex-direction: column;
+}
+.console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.console-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+.console-body {
+  flex: 1;
+  overflow: auto;
+  padding: 10px 12px;
+  color: #d1d7e0;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* === 반응형 === */
+@media (max-width: 900px) {
+  .editor-container {
+    flex-direction: column;
+  }
+  #splitter {
+    width: 100%;
+    height: 6px;
+    cursor: row-resize;
+  }
+  .pane-left, .pane-right {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 50%;
+  }
+}
+
+/* =============== 패널별 색상 커스터마이징 =============== */
+
+/* ===== 좌측 에디터(.code-editor) ===== */
+.code-editor {
+  /* Firefox */
+  scrollbar-color: #3a3f44 #0c1117; /* thumb / track */
+  scrollbar-width: auto;
+}
+.code-editor::-webkit-scrollbar-thumb {
+  background: #3a3f44;
+  border-radius: 6px;
+}
+.code-editor::-webkit-scrollbar-thumb:hover {
+  background: #4e555d;
+}
+.code-editor::-webkit-scrollbar-track {
+  background: #0c1117;
+  border-radius: 6px;
+}
+
+/* ===== 우측 프리뷰(.markdown-view) ===== */
+.markdown-view {
+  /* Firefox */
+  scrollbar-color: #3a3f44 #0c1117;
+  scrollbar-width: auto;
+}
+.markdown-view::-webkit-scrollbar-thumb {
+  background: #3a3f44;
+  border-radius: 6px;
+}
+.markdown-view::-webkit-scrollbar-thumb:hover {
+  background: #4e555d;
+}
+.markdown-view::-webkit-scrollbar-track {
+  background: #0c1117;
+  border-radius: 6px;
+}
+
+/* ===== 콘솔(.console-body) ===== */
+.console-body {
+  /* Firefox */
+  scrollbar-color: #3a3f44 #0c1117;
+  scrollbar-width: auto;
+}
+.console-body::-webkit-scrollbar-thumb {
+  background: #3a3f44;
+  border-radius: 6px;
+}
+.console-body::-webkit-scrollbar-thumb:hover {
+  background: #4e555d;
+}
+.console-body::-webkit-scrollbar-track {
+  background: #0c1117;
+  border-radius: 6px;
+}

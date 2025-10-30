@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Obsidian to GitHub Markdown Converter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Material Symbols Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@40,300,0,0" rel="stylesheet" />
+
+  <!-- GitHub Markdown CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.5.0/github-markdown.min.css">
+  <!-- highlight.js default style -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/default.min.css">
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- MathJax v3 (GitHub 동일 렌더러) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true,
+        tags: 'ams'
+      },
+      options: { renderActions: { addMenu: [] } }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* GitHub 수식 렌더링 스타일 */
+    .markdown-body mjx-container {
+      font-size: 100%;
+      line-height: 1.6;
+    }
+    mjx-container[jax="CHTML"][display="true"] {
+      margin: 1em 0;
+    }
+
+    /* 아이콘 버튼 스타일 */
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0;
+    }
+    .icon-button:hover {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+    .icon-button .material-symbols-rounded {
+      font-size: 22px;
+      line-height: 1;
+      font-variation-settings: "wght" 500;
+    }
+
+    /* 툴바 정렬 */
+    .tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <h1 class="app-title">Obsidian to GitHub Markdown Converter</h1>
+    </div>
+
+    <div class="tools">
+
+      <!-- 파일 불러오기 -->
+      <label class="icon-button" title=".md 파일 불러오기">
+        <span class="material-symbols-rounded">upload_file</span>
+        <input id="file-input" type="file" accept=".md,text/markdown" hidden />
+      </label>
+
+      <!-- 변환본 저장 -->
+      <button id="btn-download" class="icon-button" title="변환본 저장 (.md)">
+        <span class="material-symbols-rounded">download</span>
+      </button>
+
+      <!-- 샘플 불러오기 -->
+      <button id="btn-sample" class="icon-button" title="샘플 불러오기">
+        <span class="material-symbols-rounded">description</span>
+      </button>
+
+      <!-- GitHub 링크 -->
+      <a class="icon-button" href="https://github.com" target="_blank" rel="noopener" title="GitHub 열기">
+        <span class="material-symbols-rounded">open_in_new</span>
+      </a>
+
+    </div>
+  </header>
+
+  <!-- Overleaf-style layout -->
+  <main class="editor-container">
+    <section class="pane pane-left">
+      <div class="pane-header">
+        <h2>GitHub 변환본 (편집 가능)</h2>
+      </div>
+      <textarea id="output-md" class="code-editor" spellcheck="false" placeholder="여기에 변환된 Markdown이 표시됩니다."></textarea>
+    </section>
+
+    <!-- 분할선 -->
+    <div id="splitter"></div>
+
+    <section class="pane pane-right">
+      <div class="pane-header">
+        <h2>GitHub 페이지 뷰</h2>
+        <button id="btn-compile" class="compile-button" title="다시 컴파일하기">
+          <span class="material-symbols-rounded">refresh</span>
+          <span class="label">다시 컴파일하기</span>
+        </button>
+      </div>
+      <article id="preview" class="markdown-body markdown-view">
+        <p>여기에 미리보기가 표시됩니다.</p>
+      </article>
+    </section>
+  </main>
+
+  <section class="console">
+    <div class="console-header">
+      <strong>오류/경고 콘솔</strong>
+      <div class="console-actions">
+        <button id="btn-clear" class="ghost">지우기</button>
+        <button id="btn-toggle" class="ghost">접기/펼치기</button>
+      </div>
+    </div>
+    <pre id="console-log" class="console-body">(수식 오류가 있으면 라인 번호와 함께 표시됩니다)
+</pre>
+  </section>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/dist/markdown-it-task-lists.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/build/highlight.min.js"></script>
+
+  <!-- App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
