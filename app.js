@@ -56,30 +56,35 @@ function transformLatexBlocks(content) {
   return content;
 }
 function convertImageSyntax(content) {
-  return content.replace(/!\[(\d+)\]\((.*?)\)/g, (_, width, path) => {
-    // 절대 URL은 그대로 사용
+  return content.replace(/!\[(.*?)\]\((.*?)\)/g, (_, widthRaw, path) => {
+    // widthRaw가 비어 있으면 기본 width를 쓰거나 공백 처리
+    const width = widthRaw && /^\d+$/.test(widthRaw) ? widthRaw : '';
+
     const isUrl = /^https?:\/\//i.test(path);
     if (isUrl) {
-      return `<img src="${path}" width="${width}">\n`;
+      return width
+        ? `<img src="${path}" width="${width}">\n`
+        : `<img src="${path}">\n`;
     }
 
     try {
-      // URL 디코딩 (%20 → space)
       const decoded = decodeURIComponent(path);
-
-      // 파일명만 추출
-      const parts = decoded.split(/[/\\]/);   // 윈도우 \ 와 유닉스 / 모두 지원
+      const parts = decoded.split(/[/\\]/);
       const filename = parts[parts.length - 1];
 
-      // Docs/로 통일
       const newPath = `Docs/${filename}`;
-      return `<img src="${newPath}" width="${width}">\n`;
+      return width
+        ? `<img src="${newPath}" width="${width}">\n`
+        : `<img src="${newPath}">\n`;
+
     } catch {
-      // 디코딩 실패 시 원본 경로 적용
-      return `<img src="${path}" width="${width}">\n`;
+      return width
+        ? `<img src="${path}" width="${width}">\n`
+        : `<img src="${path}">\n`;
     }
   });
 }
+
 function removeTabsOutsideCodeblocks(content) {
   const codeBlockRanges = findCodeBlockRanges(content);
   let result = '';
