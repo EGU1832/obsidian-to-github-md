@@ -69,16 +69,18 @@ def convert_image_syntax(content: str) -> str:
         width = match.group(1)
         full_path = match.group(2)
 
-        # If it's an absolute URL, use as is
+        # 절대 URL은 그대로 유지
         if full_path.startswith('http://') or full_path.startswith('https://'):
             return f'<img src="{full_path}" width="{width}">\n'
 
-        # Only modify if it's a local file path
-        decoded_path = urllib.parse.unquote(full_path)   # %20 → space
-        filename = os.path.basename(decoded_path)         # e.g., image.png
+        # 로컬 파일 경로 처리: 마지막 파일명만 사용
+        decoded_path = urllib.parse.unquote(full_path)     # %20 → space
+        filename = os.path.basename(decoded_path)          # e.g., Pasted image ....png
+
         new_path = f"Docs/{filename}"
         return f'<img src="{new_path}" width="{width}">\n'
 
+    # ![400](path)
     return re.sub(r'!\[(\d+)\]\((.*?)\)', replace_image, content)
 
 # Remove tabs outside code blocks

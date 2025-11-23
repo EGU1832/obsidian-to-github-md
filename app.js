@@ -57,13 +57,25 @@ function transformLatexBlocks(content) {
 }
 function convertImageSyntax(content) {
   return content.replace(/!\[(\d+)\]\((.*?)\)/g, (_, width, path) => {
+    // 절대 URL은 그대로 사용
     const isUrl = /^https?:\/\//i.test(path);
-    if (isUrl) return `<img src="${path}" width="${width}">\n`;
+    if (isUrl) {
+      return `<img src="${path}" width="${width}">\n`;
+    }
+
     try {
+      // URL 디코딩 (%20 → space)
       const decoded = decodeURIComponent(path);
-      const filename = decoded.split('/').pop();
-      return `<img src="Docs/${filename}" width="${width}">\n`;
+
+      // 파일명만 추출
+      const parts = decoded.split(/[/\\]/);   // 윈도우 \ 와 유닉스 / 모두 지원
+      const filename = parts[parts.length - 1];
+
+      // Docs/로 통일
+      const newPath = `Docs/${filename}`;
+      return `<img src="${newPath}" width="${width}">\n`;
     } catch {
+      // 디코딩 실패 시 원본 경로 적용
       return `<img src="${path}" width="${width}">\n`;
     }
   });
