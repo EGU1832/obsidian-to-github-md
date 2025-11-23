@@ -66,22 +66,33 @@ def transform_latex_blocks(content: str) -> str:
 # Transform image syntax
 def convert_image_syntax(content: str) -> str:
     def replace_image(match):
-        width = match.group(1)
+        width_raw = match.group(1)    # width 또는 빈 문자열/텍스트
         full_path = match.group(2)
+
+        # width가 숫자가 아니라면 제거
+        width = width_raw if width_raw.isdigit() else ''
 
         # 절대 URL은 그대로 유지
         if full_path.startswith('http://') or full_path.startswith('https://'):
-            return f'<img src="{full_path}" width="{width}">\n'
+            if width:
+                return f'<img src="{full_path}" width="{width}">\n'
+            else:
+                return f'<img src="{full_path}">\n'
 
-        # 로컬 파일 경로 처리: 마지막 파일명만 사용
-        decoded_path = urllib.parse.unquote(full_path)     # %20 → space
-        filename = os.path.basename(decoded_path)          # e.g., Pasted image ....png
+        # 로컬 파일 경로 처리: basename만 사용
+        decoded_path = urllib.parse.unquote(full_path)  # %20 → space
+        filename = os.path.basename(decoded_path)
 
         new_path = f"Docs/{filename}"
-        return f'<img src="{new_path}" width="{width}">\n'
 
-    # ![400](path)
-    return re.sub(r'!\[(\d+)\]\((.*?)\)', replace_image, content)
+        if width:
+            return f'<img src="{new_path}" width="{width}">\n'
+        else:
+            return f'<img src="{new_path}">\n'
+
+    # width가 숫자일 수도 있고 empty일 수도 있음
+    # ![anything](path) 형태 전체 지원
+    return re.sub(r'!\[(.*?)\]\((.*?)\)', replace_image, content)
 
 # Remove tabs outside code blocks
 def remove_tabs_outside_codeblocks(content: str) -> str:
