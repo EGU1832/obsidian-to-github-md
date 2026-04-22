@@ -157,6 +157,29 @@ body {
   padding: 20px;
 }
 
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.drop-overlay.active {
+  display: flex;
+}
+
+.drop-box {
+  border: 2px dashed #888;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+}
+
 /* 코드블록, 수식 스타일 */
 .markdown-body pre code { background: transparent !important; }
 .markdown-body mjx-container { font-size: 100%; line-height: 1.6; }

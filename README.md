@@ -9,7 +9,7 @@
 <p align="center">
   Convert and preview Obsidian-flavored Markdown<br>
   in a live GitHub-style viewer — with LaTeX, code highlighting, and safe rendering.<br><br>
-  <b>v2.1.0 (Release)</b>
+  <b>v2.1.1 (Release)</b>
   <br>
   <a href="https://egu1832.github.io/obsidian-to-github-md/"><strong>Open Live Demo »</strong></a>
   <br><br>

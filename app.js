@@ -112,11 +112,21 @@ const elConsole = document.getElementById('console-log');
 const elBtnClear = document.getElementById('btn-clear');
 const elBtnToggle = document.getElementById('btn-toggle');
 const btnCompile = document.getElementById('btn-compile');
+const elLangButton = document.getElementById('btn-lang');
+const docRoot = document.documentElement;
 const WORKER_URL = "https://markdown-proxy.skygrid1832.workers.dev/render_markdown";
 
-function logConsole(msg, type = 'info') {
-  const tag = (type === 'error') ? '[ERROR] ' : (type === 'warn') ? '[WARN ] ' : '[INFO ] ';
-  elConsole.textContent += `${tag}${msg}\n`;
+function logConsole(msg, type = 'info', extra = null) {
+  const time = new Date().toLocaleTimeString();
+  const tag =
+    type === 'error' ? '[ERROR]' :
+    type === 'warn' ? '[WARN ]' : '[INFO ]';
+
+  elConsole.textContent += `[${time}] ${tag} ${msg}\n`;
+
+  if (extra) {
+    elConsole.textContent += JSON.stringify(extra, null, 2) + '\n';
+  }
 }
 
 function setConsoleCollapsed(collapsed) {
@@ -132,14 +142,27 @@ elBtnClear.addEventListener('click', () => { elConsole.textContent = ''; });
 
 async function previewRender() {
   const text = elOutput.value;
+
   try {
+    logConsole(i18n[currentLang].renderRequestStart);
+
     const res = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
-    if (!res.ok) throw new Error("GitHub API error: " + res.status);
-    let html = await res.text();
+
+    const raw = await res.text();
+
+    if (!res.ok) {
+      logConsole(i18n[currentLang].serverResponseError, "error", {
+        status: res.status,
+        body: raw
+      });
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    let html = raw;
     html = html
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
@@ -147,13 +170,19 @@ async function previewRender() {
       .replace(/&nbsp;/g, " ")
       .replace(/&quot;/g, "\"")
       .replace(/&#39;/g, "'");
+
     elPreview.innerHTML = html;
 
-    if (window.MathJax && window.MathJax.typesetPromise) {
+    if (window.MathJax?.typesetPromise) {
       await MathJax.typesetPromise([elPreview]);
     }
+
+    logConsole(i18n[currentLang].renderSuccess);
+
   } catch (err) {
-    elPreview.innerHTML = `<pre style="color:#f85149">렌더링 오류: ${err.message}</pre>`;
+    logConsole(err.message, "error", err.stack);
+    elPreview.innerHTML =
+      `<pre style="color:#f85149">${i18n[currentLang].renderError}:\n${err.message}</pre>`;
   }
 }
 
@@ -163,30 +192,65 @@ async function previewRender() {
 const elFile = document.getElementById('file-input');
 const elBtnDownload = document.getElementById('btn-download');
 const elBtnSample = document.getElementById('btn-sample');
+let lastFileName = "converted_github.md";
+
+const dropZone = document.body;
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+});
+
+dropZone.addEventListener('drop', async (e) => {
+  e.preventDefault();
+
+  const file = e.dataTransfer.files?.[0];
+  if (!file) return;
+
+  const text = await file.text();
+  const converted = convertObsidianToGitHubMD(text);
+
+  elOutput.value = converted;
+
+  lastFileName = file.name;
+
+  logConsole(`${i18n[currentLang].dragFileLoaded}: ${file.name}`);
+});
 
 elFile.addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
+
   const text = await file.text();
   const converted = convertObsidianToGitHubMD(text);
+
   elOutput.value = converted;
-  logConsole(`파일 로드 및 변환 완료: ${file.name}`);
+  lastFileName = file.name.replace(/\.md$/, '_converted.md');
+
+  logConsole(`${i18n[currentLang].fileLoadedConverted}: ${file.name}`);
 });
 
 elBtnDownload.addEventListener('click', () => {
-  const blob = new Blob([elOutput.value], { type: 'text/markdown;charset=utf-8' });
+  const filename = prompt(i18n[currentLang].promptFilename, lastFileName) || lastFileName;
+
+  const blob = new Blob([elOutput.value], {
+    type: 'text/markdown;charset=utf-8'
+  });
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.download = 'converted_github.md';
+
+  a.download = filename;
   a.href = url;
   a.click();
+
   URL.revokeObjectURL(url);
-  logConsole('변환본을 저장했습니다.');
+
+  logConsole(`${i18n[currentLang].fileSaved}: ${filename}`);
 });
 
 elBtnSample.addEventListener('click', () => {
   const sample = [
-    '# 샘플 문서',
+    i18n[currentLang].sampleTitle,
     '',
     '$$',
     '\\int_0^1 x^2 \\, dx = \\frac{1}{3}',
@@ -198,7 +262,7 @@ elBtnSample.addEventListener('click', () => {
     ''
   ].join('\n');
   elOutput.value = convertObsidianToGitHubMD(sample);
-  logConsole('샘플을 로드했습니다.');
+  logConsole(i18n[currentLang].sampleLoaded);
 });
 
 /* ===========================
@@ -207,28 +271,22 @@ elBtnSample.addEventListener('click', () => {
 function setCompileLoading(loading) {
   if (loading) {
     btnCompile.disabled = true;
-    btnCompile.innerHTML = '<span class="material-symbols-rounded spin">refresh</span><span class="label"> 컴파일 중...</span>';
+    btnCompile.innerHTML = `<span class="material-symbols-rounded spin">refresh</span><span class="label">${i18n[currentLang].loading}</span>`;
   } else {
     btnCompile.disabled = false;
-    btnCompile.innerHTML = '<span class="material-symbols-rounded">refresh</span><span class="label">다시 컴파일하기</span>';
+    btnCompile.innerHTML = `<span class="material-symbols-rounded">refresh</span><span class="label">${i18n[currentLang].compile}</span>`;
   }
+
+  btnCompile.title = i18n[currentLang].compile;
 }
 
 btnCompile.addEventListener('click', async () => {
   setCompileLoading(true);
-  logConsole("다시 컴파일 중...");
+  logConsole(i18n[currentLang].recompiling);
   await previewRender();
   setCompileLoading(false);
-  logConsole("렌더링 완료.");
+  logConsole(i18n[currentLang].done);
 });
-
-/* ===========================
-   초기화
-   =========================== */
-elOutput.value = '';
-elPreview.innerHTML = '<p>여기에 미리보기가 표시됩니다.</p>';
-logConsole('준비 완료. .md 파일을 불러오거나 "다시 컴파일하기"를 눌러 렌더링하세요.');
-
 
 /* ===========================
     드래그로 분할선 조정 기능 (수평/수직 모두 대응)
@@ -278,6 +336,172 @@ function onDrag(e) {
     leftPane.style.flex = `0 0 ${newH}px`;
     leftPane.style.height = `${newH}px`;
   }
+}
+
+/* ===========================
+    한/영 전환
+   =========================== */
+let currentLang = 'ko';
+
+const i18n = {
+  ko: {
+    appTitle: "Obsidian to GitHub Markdown Converter",
+    compile: "다시 컴파일하기",
+    loading: "컴파일 중...",
+    preview: "여기에 미리보기가 표시됩니다.",
+    done: "렌더링 완료.",
+    langToggle: "언어 전환",
+    loadFile: ".md 파일 불러오기",
+    downloadFile: "변환본 저장 (.md)",
+    loadSample: "샘플 불러오기",
+    openGithub: "GitHub 열기",
+    editorHeading: "GitHub 변환본 (편집 가능)",
+    outputPlaceholder: "여기에 변환된 Markdown이 표시됩니다.",
+    previewHeading: "GitHub 페이지 뷰",
+    consoleHeading: "오류/경고 콘솔",
+    clear: "지우기",
+    toggle: "접기/펼치기",
+    consoleInitial: "(수식 오류가 있으면 라인 번호와 함께 표시됩니다)\n",
+    dropOverlay: "파일을 여기에 드롭하세요 (.md)",
+    promptFilename: "파일 이름을 입력하세요:",
+    renderRequestStart: "렌더링 요청 시작",
+    serverResponseError: "서버 응답 오류",
+    renderSuccess: "렌더링 성공",
+    renderError: "렌더링 오류",
+    dragFileLoaded: "드래그 파일 로드",
+    fileLoadedConverted: "파일 로드 및 변환 완료",
+    fileSaved: "파일 저장됨",
+    sampleTitle: "# 샘플 문서",
+    sampleLoaded: "샘플을 로드했습니다.",
+    recompiling: "다시 컴파일 중...",
+    ready: '준비 완료. .md 파일을 불러오거나 "다시 컴파일하기"를 눌러 렌더링하세요.'
+  },
+  en: {
+    appTitle: "Obsidian to GitHub Markdown Converter",
+    compile: "Recompile",
+    loading: "Compiling...",
+    preview: "Preview will appear here.",
+    done: "Rendering complete.",
+    langToggle: "Switch language",
+    loadFile: "Load .md file",
+    downloadFile: "Save converted file (.md)",
+    loadSample: "Load sample",
+    openGithub: "Open GitHub",
+    editorHeading: "Converted GitHub Markdown (editable)",
+    outputPlaceholder: "Converted Markdown will appear here.",
+    previewHeading: "GitHub Page View",
+    consoleHeading: "Error/Warning Console",
+    clear: "Clear",
+    toggle: "Collapse/Expand",
+    consoleInitial: "(Formula errors are shown with line numbers)\n",
+    dropOverlay: "Drop your file here (.md)",
+    promptFilename: "Enter a file name:",
+    renderRequestStart: "Starting render request",
+    serverResponseError: "Server response error",
+    renderSuccess: "Rendering succeeded",
+    renderError: "Rendering error",
+    dragFileLoaded: "Dragged file loaded",
+    fileLoadedConverted: "File loaded and converted",
+    fileSaved: "File saved",
+    sampleTitle: "# Sample Document",
+    sampleLoaded: "Sample loaded.",
+    recompiling: "Recompiling...",
+    ready: 'Ready. Load an .md file or click "Recompile" to render.'
+  }
+};
+
+function updateStaticTranslations() {
+  const dict = i18n[currentLang];
+
+  docRoot.lang = currentLang;
+
+  document.querySelectorAll('[data-i18n]').forEach((node) => {
+    const key = node.dataset.i18n;
+    if (dict[key]) {
+      node.textContent = dict[key];
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+    const key = node.dataset.i18nTitle;
+    if (dict[key]) {
+      node.title = dict[key];
+      node.setAttribute('aria-label', dict[key]);
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => {
+    const key = node.dataset.i18nPlaceholder;
+    if (dict[key]) {
+      node.placeholder = dict[key];
+    }
+  });
+}
+
+function setConsoleInitialMessage() {
+  const isInitialMessage =
+    elConsole.textContent === i18n.ko.consoleInitial ||
+    elConsole.textContent === i18n.en.consoleInitial;
+
+  if (isInitialMessage) {
+    elConsole.textContent = i18n[currentLang].consoleInitial;
+  }
+}
+
+function applyLanguage() {
+  const dict = i18n[currentLang];
+
+  updateStaticTranslations();
+  setConsoleInitialMessage();
+
+  const compileLabel = btnCompile.querySelector('.label');
+  if (compileLabel) {
+    compileLabel.textContent = btnCompile.disabled ? dict.loading : dict.compile;
+  }
+  btnCompile.title = dict.compile;
+  btnCompile.setAttribute('aria-label', dict.compile);
+
+  const previewText = elPreview.textContent.trim();
+  const isPreviewPlaceholder =
+    !previewText ||
+    previewText === i18n.ko.preview ||
+    previewText === i18n.en.preview;
+
+  if (isPreviewPlaceholder) {
+    elPreview.innerHTML = `<p>${dict.preview}</p>`;
+  }
+
+  elLangButton.setAttribute('aria-pressed', currentLang === 'en' ? 'true' : 'false');
+}
+
+document.getElementById('btn-lang').addEventListener('click', () => {
+  currentLang = currentLang === 'ko' ? 'en' : 'ko';
+  applyLanguage();
+  logConsole(`Language switched to ${currentLang}`);
+});
+
+/* ===========================
+   초기화
+   =========================== */
+elOutput.value = '';
+elPreview.innerHTML = '';
+applyLanguage();
+logConsole(i18n[currentLang].ready);
+
+const overlay = document.getElementById('drop-overlay');
+
+if (overlay) {
+  document.addEventListener('dragenter', () => {
+    overlay.classList.add('active');
+  });
+
+  document.addEventListener('dragleave', () => {
+    overlay.classList.remove('active');
+  });
+
+  document.addEventListener('drop', () => {
+    overlay.classList.remove('active');
+  });
 }
 
 // 마우스

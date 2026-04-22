@@ -90,29 +90,33 @@
 <body>
   <header class="app-header">
     <div class="brand">
-      <h1 class="app-title">Obsidian to GitHub Markdown Converter</h1>
+      <h1 class="app-title" data-i18n="appTitle">Obsidian to GitHub Markdown Converter</h1>
     </div>
 
     <div class="tools">
+      <!-- 언어 전환 -->
+      <button id="btn-lang" class="icon-button" title="언어 전환" data-i18n-title="langToggle">
+        <span class="material-symbols-rounded">language</span>
+      </button>
 
       <!-- 파일 불러오기 -->
-      <label class="icon-button" title=".md 파일 불러오기">
+      <label class="icon-button" title=".md 파일 불러오기" data-i18n-title="loadFile">
         <span class="material-symbols-rounded">upload_file</span>
         <input id="file-input" type="file" accept=".md,text/markdown" hidden />
       </label>
 
       <!-- 변환본 저장 -->
-      <button id="btn-download" class="icon-button" title="변환본 저장 (.md)">
+      <button id="btn-download" class="icon-button" title="변환본 저장 (.md)" data-i18n-title="downloadFile">
         <span class="material-symbols-rounded">download</span>
       </button>
 
       <!-- 샘플 불러오기 -->
-      <button id="btn-sample" class="icon-button" title="샘플 불러오기">
+      <button id="btn-sample" class="icon-button" title="샘플 불러오기" data-i18n-title="loadSample">
         <span class="material-symbols-rounded">description</span>
       </button>
 
       <!-- GitHub 링크 -->
-      <a class="icon-button" href="https://github.com" target="_blank" rel="noopener" title="GitHub 열기">
+      <a class="icon-button" href="https://github.com" target="_blank" rel="noopener" title="GitHub 열기" data-i18n-title="openGithub">
         <span class="material-symbols-rounded">open_in_new</span>
       </a>
 
@@ -123,9 +127,9 @@
   <main class="editor-container">
     <section class="pane pane-left">
       <div class="pane-header">
-        <h2>GitHub 변환본 (편집 가능)</h2>
+        <h2 data-i18n="editorHeading">GitHub 변환본 (편집 가능)</h2>
       </div>
-      <textarea id="output-md" class="code-editor" spellcheck="false" placeholder="여기에 변환된 Markdown이 표시됩니다."></textarea>
+      <textarea id="output-md" class="code-editor" spellcheck="false" placeholder="여기에 변환된 Markdown이 표시됩니다." data-i18n-placeholder="outputPlaceholder"></textarea>
     </section>
 
     <!-- 분할선 -->
@@ -133,29 +137,36 @@
 
     <section class="pane pane-right">
       <div class="pane-header">
-        <h2>GitHub 페이지 뷰</h2>
-        <button id="btn-compile" class="compile-button" title="다시 컴파일하기">
+        <h2 data-i18n="previewHeading">GitHub 페이지 뷰</h2>
+        <button id="btn-compile" class="compile-button" title="다시 컴파일하기" data-i18n-title="compile">
           <span class="material-symbols-rounded">refresh</span>
-          <span class="label">다시 컴파일하기</span>
+          <span class="label" data-i18n="compile">다시 컴파일하기</span>
         </button>
       </div>
       <article id="preview" class="markdown-body markdown-view">
-        <p>여기에 미리보기가 표시됩니다.</p>
+        <p data-i18n="preview">여기에 미리보기가 표시됩니다.</p>
       </article>
     </section>
   </main>
 
   <section class="console">
     <div class="console-header">
-      <strong>오류/경고 콘솔</strong>
+      <strong data-i18n="consoleHeading">오류/경고 콘솔</strong>
       <div class="console-actions">
-        <button id="btn-clear" class="ghost">지우기</button>
-        <button id="btn-toggle" class="ghost">접기/펼치기</button>
+        <button id="btn-clear" class="ghost" data-i18n="clear">지우기</button>
+        <button id="btn-toggle" class="ghost" data-i18n="toggle">접기/펼치기</button>
       </div>
     </div>
-    <pre id="console-log" class="console-body">(수식 오류가 있으면 라인 번호와 함께 표시됩니다)
+    <pre id="console-log" class="console-body" data-i18n-initial="consoleInitial">(수식 오류가 있으면 라인 번호와 함께 표시됩니다)
 </pre>
   </section>
+
+  <div id="drop-overlay" class="drop-overlay">
+    <div class="drop-box">
+      <span class="material-symbols-rounded">upload</span>
+      <p data-i18n="dropOverlay">파일을 여기에 드롭하세요 (.md)</p>
+    </div>
+  </div>
 
   <!-- Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
