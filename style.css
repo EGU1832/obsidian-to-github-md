@@ -3,7 +3,7 @@
   --panel: #161b22;
   --muted: #8b949e;
   --text: #c9d1d9;
-  --accent: #2f81f7;
+  --accent: #1f6feb;
   --border: #30363d;
   --green: #3fb950;
   --red: #f85149;
@@ -61,6 +61,10 @@ html, body {
 }
 .file-button input { display: none; }
 
+.seo-description {
+  position: absolute;
+  left: -9999px;
+}
 
 button, .ghost, .secondary {
   padding: 4px 12px;
