@@ -127,17 +127,26 @@ function logConsole(msg, type = 'info', extra = null) {
   if (extra) {
     elConsole.textContent += JSON.stringify(extra, null, 2) + '\n';
   }
+
+  elConsole.scrollTop = elConsole.scrollHeight;
 }
 
-function setConsoleCollapsed(collapsed) {
-  document.querySelector('.console .console-body').style.display = collapsed ? 'none' : 'block';
-}
+const consoleEl = document.querySelector('.console');
+const btnToggle = document.getElementById('btn-toggle');
 
-let consoleCollapsed = false;
-elBtnToggle.addEventListener('click', () => {
-  consoleCollapsed = !consoleCollapsed;
-  setConsoleCollapsed(consoleCollapsed);
+let isCollapsed = false;
+
+btnToggle.addEventListener('click', () => {
+  isCollapsed = !isCollapsed;
+
+  consoleEl.classList.toggle('collapsed', isCollapsed);
+
+  // 버튼 텍스트 변경 (선택)
+  btnToggle.textContent = isCollapsed
+    ? (currentLang === 'ko' ? '펼치기' : 'Expand')
+    : (currentLang === 'ko' ? '접기' : 'Collapse');
 });
+
 elBtnClear.addEventListener('click', () => { elConsole.textContent = ''; });
 
 async function previewRender() {
@@ -194,13 +203,30 @@ const elBtnDownload = document.getElementById('btn-download');
 const elBtnSample = document.getElementById('btn-sample');
 let lastFileName = "converted_github.md";
 
-const dropZone = document.body;
+let dragCounter = 0;
 
-dropZone.addEventListener('dragover', (e) => {
+document.addEventListener('dragenter', (e) => {
+  dragCounter++;
+  document.body.classList.add('dragging');
+});
+
+document.addEventListener('dragleave', (e) => {
+  dragCounter--;
+  if (dragCounter === 0) {
+    document.body.classList.remove('dragging');
+  }
+});
+
+document.addEventListener('drop', (e) => {
+  dragCounter = 0;
+  document.body.classList.remove('dragging');
+});
+
+window.addEventListener('dragover', (e) => {
   e.preventDefault();
 });
 
-dropZone.addEventListener('drop', async (e) => {
+window.addEventListener('drop', async (e) => {
   e.preventDefault();
 
   const file = e.dataTransfer.files?.[0];
@@ -210,10 +236,13 @@ dropZone.addEventListener('drop', async (e) => {
   const converted = convertObsidianToGitHubMD(text);
 
   elOutput.value = converted;
-
   lastFileName = file.name;
 
   logConsole(`${i18n[currentLang].dragFileLoaded}: ${file.name}`);
+});
+
+document.addEventListener('dragenter', () => {
+  console.log('dragenter');
 });
 
 elFile.addEventListener('change', async (e) => {
@@ -298,19 +327,24 @@ const leftPane = document.querySelector('.pane-left');
 let isDragging = false;
 
 function beginDrag(e) {
-  e.preventDefault();
   isDragging = true;
-  container.classList.add('dragging');
-  document.body.style.cursor = getComputedStyle(container).flexDirection === 'column' ? 'row-resize' : 'col-resize';
+
+  const isColumn = getComputedStyle(container).flexDirection === 'column';
+
+  document.body.style.cursor = isColumn ? 'row-resize' : 'col-resize';
   document.body.style.userSelect = 'none';
+
+  container.classList.add('dragging');
 }
 
 function endDrag() {
   if (!isDragging) return;
   isDragging = false;
-  container.classList.remove('dragging');
+
   document.body.style.cursor = 'default';
   document.body.style.userSelect = '';
+
+  container.classList.remove('dragging');
 }
 
 function onDrag(e) {
@@ -318,25 +352,23 @@ function onDrag(e) {
 
   const rect = container.getBoundingClientRect();
   const isColumn = getComputedStyle(container).flexDirection === 'column';
-  const min = 200; // 최소 px
-  const maxX = rect.width * 0.9;
-  const maxY = rect.height * 0.9;
+
+  let ratio;
 
   if (!isColumn) {
-    // 좌우 레이아웃
-    const offsetX = e.clientX - rect.left;
-    const newW = Math.min(Math.max(offsetX, min), maxX);
-    // 핵심: flex-basis를 직접 변경
-    leftPane.style.flex = `0 0 ${newW}px`;
-    leftPane.style.width = `${newW}px`; // (보조)
+    ratio = (e.clientX - rect.left) / rect.width;
   } else {
-    // 상하 레이아웃(모바일)
-    const offsetY = e.clientY - rect.top;
-    const newH = Math.min(Math.max(offsetY, 150), maxY);
-    leftPane.style.flex = `0 0 ${newH}px`;
-    leftPane.style.height = `${newH}px`;
+    ratio = (e.clientY - rect.top) / rect.height;
   }
+
+  // 제한 (20% ~ 80%)
+  const clamped = Math.min(Math.max(ratio, 0.2), 0.8);
+
+  leftPane.style.flex = `0 0 ${clamped * 100}%`;
 }
+
+container.classList.add('dragging'); // beginDrag
+container.classList.remove('dragging'); // endDrag
 
 /* ===========================
     한/영 전환
@@ -346,8 +378,8 @@ let currentLang = 'ko';
 const i18n = {
   ko: {
     appTitle: "Obsidian to GitHub Markdown Converter",
-    compile: "다시 컴파일하기",
-    loading: "컴파일 중...",
+    compile: "표시하기",
+    loading: "렌더링 중...",
     preview: "여기에 미리보기가 표시됩니다.",
     done: "렌더링 완료.",
     langToggle: "언어 전환",
@@ -373,13 +405,13 @@ const i18n = {
     fileSaved: "파일 저장됨",
     sampleTitle: "# 샘플 문서",
     sampleLoaded: "샘플을 로드했습니다.",
-    recompiling: "다시 컴파일 중...",
-    ready: '준비 완료. .md 파일을 불러오거나 "다시 컴파일하기"를 눌러 렌더링하세요.'
+    recompiling: "다시 렌더링 중...",
+    ready: '준비 완료. .md 파일을 불러오거나 "표시하기"를 눌러 렌더링하세요.'
   },
   en: {
     appTitle: "Obsidian to GitHub Markdown Converter",
-    compile: "Recompile",
-    loading: "Compiling...",
+    compile: "Display",
+    loading: "Rendering...",
     preview: "Preview will appear here.",
     done: "Rendering complete.",
     langToggle: "Switch language",
@@ -405,8 +437,8 @@ const i18n = {
     fileSaved: "File saved",
     sampleTitle: "# Sample Document",
     sampleLoaded: "Sample loaded.",
-    recompiling: "Recompiling...",
-    ready: 'Ready. Load an .md file or click "Recompile" to render.'
+    recompiling: "Re-rendering...",
+    ready: 'Ready. Load an .md file or click "Display" to render.'
   }
 };
 
@@ -487,22 +519,6 @@ elOutput.value = '';
 elPreview.innerHTML = '';
 applyLanguage();
 logConsole(i18n[currentLang].ready);
-
-const overlay = document.getElementById('drop-overlay');
-
-if (overlay) {
-  document.addEventListener('dragenter', () => {
-    overlay.classList.add('active');
-  });
-
-  document.addEventListener('dragleave', () => {
-    overlay.classList.remove('active');
-  });
-
-  document.addEventListener('drop', () => {
-    overlay.classList.remove('active');
-  });
-}
 
 // 마우스
 splitter.addEventListener('mousedown', beginDrag);

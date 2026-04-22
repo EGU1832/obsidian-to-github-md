@@ -63,7 +63,7 @@ html, body {
 
 
 button, .ghost, .secondary {
-  padding: 8px 12px;
+  padding: 4px 12px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
@@ -103,13 +103,10 @@ body {
 .pane-left {
   flex: 0 0 50%;
   min-width: 200px;
-  max-width: 90%;
-  border-right: none;
-  overflow: hidden;
 }
 .pane-right {
   flex: 1;
-  overflow: hidden;
+  min-width: 200px;
 }
 
 /* 패널 헤더 */
@@ -157,27 +154,17 @@ body {
   padding: 20px;
 }
 
-.drop-overlay {
+body {
+  transition: background-color 0.15s ease;
+}
+
+body.dragging::after {
+  content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: none;
-  align-items: center;
-  justify-content: center;
+  background: rgba(47, 129, 247, 0.08);
+  pointer-events: none;
   z-index: 9999;
-}
-
-.drop-overlay.active {
-  display: flex;
-}
-
-.drop-box {
-  border: 2px dashed #888;
-  padding: 40px;
-  border-radius: 12px;
-  text-align: center;
-  color: #fff;
-  font-size: 18px;
 }
 
 /* 코드블록, 수식 스타일 */
@@ -218,8 +205,11 @@ mjx-container[jax="CHTML"][display="true"] { margin: 1em 0; }
   background: #020409;
   display: flex;
   flex-direction: column;
+  transition: height 0.2s ease;
 }
 .console-header {
+  height: 40px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -229,7 +219,7 @@ mjx-container[jax="CHTML"][display="true"] { margin: 1em 0; }
 .console-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   color: var(--muted);
 }
 .console-body {
@@ -239,6 +229,16 @@ mjx-container[jax="CHTML"][display="true"] { margin: 1em 0; }
   color: #d1d7e0;
   margin: 0;
   white-space: pre-wrap;
+}
+.console-actions button {
+  min-height: 20px;
+  min-width: 80px;
+}
+.console.collapsed {
+  height: 40px;
+}
+.console.collapsed .console-body {
+  display: none;
 }
 
 /* === 반응형 === */
