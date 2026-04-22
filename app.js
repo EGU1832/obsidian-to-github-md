@@ -149,7 +149,34 @@ btnToggle.addEventListener('click', () => {
 
 elBtnClear.addEventListener('click', () => { elConsole.textContent = ''; });
 
+async function loadMathJax() {
+  if (window.MathJax) return;
+
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      tags: 'ams'
+    },
+    options: { renderActions: { addMenu: [] } }
+  };
+
+  const script = document.createElement('script');
+  script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+  script.async = true;
+
+  document.head.appendChild(script);
+
+  await new Promise(resolve => {
+    script.onload = resolve;
+  });
+}
+
 async function previewRender() {
+  await loadMathJax();
+
   const text = elOutput.value;
 
   try {
