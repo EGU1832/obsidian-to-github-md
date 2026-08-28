@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://egu1832.github.io/obsidian-to-github-md/">
+  <a href="https://grapeve12.github.io/obsidian-to-github-md/">
     <img src="icon.png" alt="Obsidian to GitHub Markdown Converter Icon" width="180" height="180" style="border-radius: 20px;">
   </a>
 </p>
@@ -11,11 +11,11 @@
   in a live GitHub-style viewer — with LaTeX, code highlighting, and safe rendering.<br><br>
   <b>v2.1.1 (Release)</b>
   <br>
-  <a href="https://egu1832.github.io/obsidian-to-github-md/"><strong>Open Live Demo »</strong></a>
+  <a href="https://grapeve12.github.io/obsidian-to-github-md/"><strong>Open Live Demo »</strong></a>
   <br><br>
-  <a href="https://github.com/egu1832/obsidian-to-github-md/issues/new?labels=bug&template=bug_report.yml">Report bug</a>
+  <a href="https://github.com/grapeve12/obsidian-to-github-md/issues/new?labels=bug&template=bug_report.yml">Report bug</a>
   ·
-  <a href="https://github.com/egu1832/obsidian-to-github-md/issues/new?labels=enhancement&template=feature_request.yml">Request feature</a>
+  <a href="https://github.com/grapeve12/obsidian-to-github-md/issues/new?labels=enhancement&template=feature_request.yml">Request feature</a>
 </p>
 
 ---
@@ -93,7 +93,7 @@ $a^2 + b^2 = c^2$
 
 ## Usage
 
-1. Open [**Live Demo**](https://egu1832.github.io/obsidian-to-github-md/).
+1. Open [**Live Demo**](https://grapeve12.github.io/obsidian-to-github-md/).
 2. Click **📂 Upload** to import your `.md` file.
 3. Review and edit converted text in the left editor.
 4. Press **🔄 다시 컴파일하기** to render the preview.
