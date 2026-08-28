@@ -114,7 +114,7 @@ const elBtnToggle = document.getElementById('btn-toggle');
 const btnCompile = document.getElementById('btn-compile');
 const elLangButton = document.getElementById('btn-lang');
 const docRoot = document.documentElement;
-const WORKER_URL = "https://obsidian-to-github-md-proxy.grapeve12.workers.dev";
+const WORKER_URL = "https://obsidian-to-github-md-proxy.grapeve12.workers.dev/render_markdown";
 
 function logConsole(msg, type = 'info', extra = null) {
   const time = new Date().toLocaleTimeString();
